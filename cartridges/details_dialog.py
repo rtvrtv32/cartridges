@@ -206,12 +206,7 @@ class DetailsDialog(Adw.Dialog):
                     "added": int(time()),
                 }
             )
-
-            if shared.win.sidebar.get_selected_row().get_child() not in (
-                shared.win.all_games_row_box,
-                shared.win.added_row_box,
-            ):
-                shared.win.sidebar.select_row(shared.win.added_row_box.get_parent())
+            shared.win.sidebar.select_row(shared.win.all_games_row_box.get_parent())
 
         else:
             if final_name == "":

@@ -39,8 +39,6 @@ class CartridgesWindow(Adw.ApplicationWindow):
     sidebar: Gtk.ListBox = Gtk.Template.Child()
     all_games_row_box: Gtk.Box = Gtk.Template.Child()
     all_games_no_label: Gtk.Label = Gtk.Template.Child()
-    added_row_box: Gtk.Box = Gtk.Template.Child()
-    added_games_no_label: Gtk.Label = Gtk.Template.Child()
     toast_overlay: Adw.ToastOverlay = Gtk.Template.Child()
     primary_menu_button: Gtk.MenuButton = Gtk.Template.Child()
     show_sidebar_button: Gtk.Button = Gtk.Template.Child()
@@ -107,29 +105,12 @@ class CartridgesWindow(Adw.ApplicationWindow):
             else None
         )
 
-        if selected_row == self.added_row_box.get_parent():
-            self.sidebar.select_row(self.added_row_box.get_parent())
-            restored = True
+        self.sidebar.get_row_at_index(1).set_visible(False)
 
-        if added_missing := (
-            not shared.store.source_games.get("imported")
-            or not (removed := get_removed("imported"))
-        ):
-            self.sidebar.select_row(self.all_games_row_box.get_parent())
-        else:
-            games_no = len(shared.store.source_games["imported"]) - removed[0]
-            self.added_games_no_label.set_label(str(games_no))
-            total_games_no += games_no
-        self.added_row_box.get_parent().set_visible(not added_missing)
-
-        self.sidebar.get_row_at_index(2).set_visible(False)
-
-        while row := self.sidebar.get_row_at_index(3):
+        while row := self.sidebar.get_row_at_index(2):
             self.sidebar.remove(row)
 
         for source_id in shared.store.source_games:
-            if source_id == "imported":
-                continue
             if not (removed := get_removed(source_id)):
                 continue
 
@@ -147,6 +128,8 @@ class CartridgesWindow(Adw.ApplicationWindow):
                 Gtk.Image.new_from_icon_name(
                     "user-desktop-symbolic"
                     if (split_id := source_id.split("_")[0]) == "desktop"
+                    else "list-add-symbolic"
+                    if (split_id := source_id.split("_")[0]) == "imported"
                     else f"{split_id}-source-symbolic"
                 )
             )
@@ -171,7 +154,7 @@ class CartridgesWindow(Adw.ApplicationWindow):
             games_no_label.add_css_class("dim-label")
 
             # Order rows based on the number of games in them
-            index = 3
+            index = 2
             while source_row := self.sidebar.get_row_at_index(index):
                 if self.source_rows[source_row][1] < games_no:
                     self.sidebar.insert(row, index)
@@ -189,7 +172,7 @@ class CartridgesWindow(Adw.ApplicationWindow):
                 self.sidebar.select_row(row.get_parent())
                 restored = True
 
-            self.sidebar.get_row_at_index(2).set_visible(True)
+            self.sidebar.get_row_at_index(1).set_visible(True)
 
         self.all_games_no_label.set_label(str(total_games_no))
 
@@ -202,8 +185,6 @@ class CartridgesWindow(Adw.ApplicationWindow):
         match row.get_child():
             case self.all_games_row_box:
                 value = "all"
-            case self.added_row_box:
-                value = "imported"
             case _:
                 value = self.source_rows[row][0]
 
