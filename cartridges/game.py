@@ -52,6 +52,7 @@ class Game(Gtk.Box):
     executable: str
     game_id: str
     source: str
+    collections: Optional[str] = None
     hidden: bool = False
     last_played: int = 0
     name: str
